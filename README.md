@@ -4,8 +4,6 @@
 
 Minimal and Simple Deep Q Learning Implemenation in Keras and Gym
 
-![dqn](./assets/rl.png)
-
 The code itself is 78 lines and is self documenting.
 
 
