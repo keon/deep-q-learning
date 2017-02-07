@@ -65,9 +65,10 @@ if __name__ == "__main__":
         state = env.reset()
         state = np.reshape(state, [1, 4])
         for time_t in range(5000):
-            # env.render()
+            env.render()
             action = agent.act(state)
             next_state, reward, done, _ = env.step(action)
+            reward = -1 if done else 0.1
             next_state = np.reshape(next_state, [1, 4])
             agent.remember(state, action, reward, next_state)
             state = copy.deepcopy(next_state)
@@ -75,4 +76,4 @@ if __name__ == "__main__":
                 print("episode: {}/{}, score: {}"
                       .format(e, episodes, time_t))
                 break
-        agent.replay(128)
+        agent.replay(32)
