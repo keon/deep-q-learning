@@ -36,7 +36,7 @@ class DQNAgent:
 
     def act(self, state):
         if np.random.rand() <= self.epsilon:
-            return env.action_space.sample()
+            return self.env.action_space.sample()
         act_values = self.model.predict(state)
         return np.argmax(act_values[0])  # returns action
 
