@@ -13,3 +13,4 @@ I made minor tweaks to this repository.
 
 I made the `memory` a deque instead of just a list. This is in order to limit the maximum number of the memory so we can give more weights to the more recent memories.
 
+I also added a `load` and `save` function for convinience.

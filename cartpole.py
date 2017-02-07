@@ -1,24 +1,21 @@
 # -*- coding: utf-8 -*-
-
 import copy
 import gym
-from collections import deque
-
 import numpy as np
+from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import RMSprop
 
 episodes = 5000
 
-
 class DQNAgent:
     def __init__(self, env):
         self.env = env
         self.memory = deque(maxlen=10000)
         self.gamma = 0.9  # decay rate
-        self.epsilon = 1  # exploration
-        self.epsilon_decay = .995
+        self.epsilon = 0.7  # exploration
+        self.epsilon_decay = .99
         self.epsilon_min = 0.05
         self.learning_rate = 0.0001
         self._build_model()
@@ -26,10 +23,10 @@ class DQNAgent:
     def _build_model(self):
         # Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(128, input_dim=4, activation='tanh'))
-        model.add(Dense(128, activation='tanh'))
-        model.add(Dense(128, activation='tanh'))
-        model.add(Dense(2, activation='softmax'))
+        model.add(Dense(64, input_dim=4, activation='tanh', init='he_uniform'))
+        model.add(Dense(128, activation='tanh', init='he_uniform'))
+        model.add(Dense(128, activation='tanh', init='he_uniform'))
+        model.add(Dense(2, activation='linear', init='he_uniform'))
         model.compile(loss='mse',
                       optimizer=RMSprop(lr=self.learning_rate))
         self.model = model
@@ -58,9 +55,16 @@ class DQNAgent:
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
+    def load(self, name):
+        self.model.load_weights(name)
+
+    def save(self, name):
+        self.model.save_weights(name)
+
 if __name__ == "__main__":
     env = gym.make('CartPole-v0')
     agent = DQNAgent(env)
+    agent.load("./save/cartpole-starter.h5")
 
     for e in range(episodes):
         state = env.reset()
@@ -69,12 +73,15 @@ if __name__ == "__main__":
             env.render()
             action = agent.act(state)
             next_state, reward, done, _ = env.step(action)
-            reward = -100 if done else reward
             next_state = np.reshape(next_state, [1, 4])
+            reward = -1 if done else reward
             agent.remember(state, action, reward, next_state)
             state = copy.deepcopy(next_state)
             if done:
-                print("episode: {}/{}, score: {}"
-                      .format(e, episodes, time_t))
+                print("episode: {}/{}, score: {}, memory size: {}, e: {}"
+                      .format(e, episodes, time_t,
+                              len(agent.memory), agent.epsilon))
                 break
+        if e % 50 == 0:
+            agent.save("./save/cartpole.h5")
         agent.replay(32)
