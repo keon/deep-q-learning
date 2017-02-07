@@ -2,6 +2,7 @@
 
 import copy
 import gym
+from collections import deque
 
 import numpy as np
 from keras.models import Sequential
@@ -14,11 +15,11 @@ episodes = 5000
 class DQNAgent:
     def __init__(self, env):
         self.env = env
-        self.memory = []
+        self.memory = deque(maxlen=10000)
         self.gamma = 0.9  # decay rate
         self.epsilon = 1  # exploration
         self.epsilon_decay = .995
-        self.epsilon_min = 0.1
+        self.epsilon_min = 0.05
         self.learning_rate = 0.0001
         self._build_model()
 
@@ -26,6 +27,7 @@ class DQNAgent:
         # Deep-Q learning Model
         model = Sequential()
         model.add(Dense(128, input_dim=4, activation='tanh'))
+        model.add(Dense(128, activation='tanh'))
         model.add(Dense(128, activation='tanh'))
         model.add(Dense(2, activation='softmax'))
         model.compile(loss='mse',
