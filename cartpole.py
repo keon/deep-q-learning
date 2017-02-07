@@ -27,7 +27,6 @@ class DQNAgent:
         model = Sequential()
         model.add(Dense(128, input_dim=4, activation='tanh'))
         model.add(Dense(128, activation='tanh'))
-        model.add(Dense(128, activation='tanh'))
         model.add(Dense(2, activation='softmax'))
         model.compile(loss='mse',
                       optimizer=RMSprop(lr=self.learning_rate))
@@ -68,7 +67,7 @@ if __name__ == "__main__":
             env.render()
             action = agent.act(state)
             next_state, reward, done, _ = env.step(action)
-            reward = -1 if done else 0.1
+            reward = -100 if done else reward
             next_state = np.reshape(next_state, [1, 4])
             agent.remember(state, action, reward, next_state)
             state = copy.deepcopy(next_state)
