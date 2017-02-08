@@ -7,7 +7,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import RMSprop
 
-episodes = 5000
+episodes = 1000
 
 class DQNAgent:
     def __init__(self, env):
@@ -45,10 +45,8 @@ class DQNAgent:
         batchs = np.random.choice(len(self.memory), batchs)
         for i in batchs:
             state, action, reward, next_state = self.memory[i]
-            target = reward
-            if i != len(self.memory) - 1:
-                target = reward + self.gamma * \
-                         np.amax(self.model.predict(next_state)[0])
+            target = reward + self.gamma * \
+                        np.amax(self.model.predict(next_state)[0])
             target_f = self.model.predict(state)
             target_f[0][action] = target
             self.model.fit(state, target_f, nb_epoch=1, verbose=0)
@@ -74,7 +72,7 @@ if __name__ == "__main__":
             action = agent.act(state)
             next_state, reward, done, _ = env.step(action)
             next_state = np.reshape(next_state, [1, 4])
-            reward = -1 if done else reward
+            reward = -100 if done else reward
             agent.remember(state, action, reward, next_state)
             state = copy.deepcopy(next_state)
             if done:
