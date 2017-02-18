@@ -1,16 +1,22 @@
 # deep-q-learning
 
+Introduction to Making a Simple Game AI with Deep Reinforcement Learning
+
+
+
 ![animation](./assets/animation.gif)
 
-Minimal and Simple Deep Q Learning Implemenation in Keras and Gym
+Minimal and Simple Deep Q Learning Implemenation in Keras and Gym. Under 100 lines of code!
 
-The code itself is 78 lines and is self documenting.
+The explanation for the `dqn.py` code is covered in the blog article
+[https://keon.io/rl/deep-q-learning-with-keras-and-gym/](https://keon.io/rl/deep-q-learning-with-keras-and-gym/)
 
 
-The explanation for the code is covered in the blog article [https://keon.io/rl/deep-q-learning-with-keras-and-gym/](https://keon.io/rl/deep-q-learning-with-keras-and-gym/)
+I made minor tweaks to this repository such as `load` and `save` functions for convenience.
 
-I made minor tweaks to this repository.
+I also made the `memory` a deque instead of just a list.
+This is in order to limit the maximum number of elements in the memory.
 
-I made the `memory` a deque instead of just a list. This is in order to limit the maximum number of the memory so we can give more weights to the more recent memories.
 
-I also added a `load` and `save` function for convinience.
+The training might be unstable for `dqn.py`. This problem is mitigated in `ddqn.py`.
+I'll cover `ddqn` in the next article.
