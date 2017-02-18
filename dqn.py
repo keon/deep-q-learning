@@ -14,10 +14,10 @@ class DQNAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=10000)
+        self.memory = deque(maxlen=50000)
         self.gamma = 0.9    # discount rate
         self.epsilon = 1.0  # exploration rate
-        self.e_decay = .996
+        self.e_decay = .997
         self.e_min = 0.05
         self.learning_rate = 0.0001
         self.model = self._build_model()
@@ -26,7 +26,6 @@ class DQNAgent:
         # Neural Net for Deep-Q learning Model
         model = Sequential()
         model.add(Dense(64, input_dim=self.state_size, activation='tanh'))
-        model.add(Dense(128, activation='tanh', init='uniform'))
         model.add(Dense(128, activation='tanh', init='uniform'))
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
@@ -43,15 +42,20 @@ class DQNAgent:
         return np.argmax(act_values[0])  # returns action
 
     def replay(self, batch_size):
+        batch_size = min(batch_size, len(self.memory))
         minibatch = random.sample(self.memory, batch_size)
-        for state, action, reward, next_state, done in minibatch:
-            target = self.model.predict(state)
+        X = np.zeros((batch_size, self.state_size))
+        Y = np.zeros((batch_size, self.action_size))
+        for i in range(batch_size):
+            state, action, reward, next_state, done = minibatch[i]
+            target = self.model.predict(state)[0]
             if done:
-                target[0][action] = reward
+                target[action] = reward
             else:
-                target[0][action] = reward + self.gamma * \
+                target[action] = reward + self.gamma * \
                             np.amax(self.model.predict(next_state)[0])
-            self.model.fit(state, target, nb_epoch=1, verbose=0)
+            X[i], Y[i] = state, target
+        self.model.fit(X, Y, batch_size=batch_size, nb_epoch=1, verbose=0)
         if self.epsilon > self.e_min:
             self.epsilon *= self.e_decay
 
@@ -71,19 +75,17 @@ if __name__ == "__main__":
     for e in range(EPISODES):
         state = env.reset()
         state = np.reshape(state, [1, state_size])
-        for time in range(5000):
+        for time in range(1000):
             # env.render()
             action = agent.act(state)
             next_state, reward, done, _ = env.step(action)
             next_state = np.reshape(next_state, [1, state_size])
-            reward = -100 if done else reward
             agent.remember(state, action, reward, next_state, done)
             state = next_state
-            if done or time == 4999:
+            if done or time == 999:
                 print("episode: {}/{}, score: {}, e: {:.2}"
                         .format(e, EPISODES, time, agent.epsilon))
                 break
-        if len(agent.memory) > 100:
-            agent.replay(16)
+        agent.replay(32)
         # if e % 10 == 0:
             # agent.save("./save/cartpole.h5")
