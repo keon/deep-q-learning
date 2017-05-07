@@ -33,7 +33,7 @@ class DQNAgent:
         # Neural Net for Deep-Q learning Model
         model = Sequential()
         model.add(Dense(20, input_dim=self.state_size, activation='tanh'))
-        model.add(Dense(20, activation='tanh', init='uniform'))
+        model.add(Dense(20, activation='tanh', kernel_initializer='uniform'))
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss=self._huber_loss,
                       optimizer=RMSprop(lr=self.learning_rate))
@@ -67,7 +67,7 @@ class DQNAgent:
                 t = self.target_model.predict(next_state)[0]
                 target[action] = reward + self.gamma * t[a]
             X[i], Y[i] = state, target
-        self.model.fit(X, Y, nb_epoch=1, verbose=0)
+        self.model.fit(X, Y, epochs=1, verbose=0)
         if self.epsilon > self.e_min:
             self.epsilon *= self.e_decay
 
