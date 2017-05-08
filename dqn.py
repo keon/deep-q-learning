@@ -5,7 +5,7 @@ import numpy as np
 from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.optimizers import RMSprop
+from keras.optimizers import Adam
 
 EPISODES = 5000
 
@@ -14,10 +14,10 @@ class DQNAgent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=100000)
+        self.memory = deque(maxlen=2000)
         self.gamma = 0.9    # discount rate
         self.epsilon = 1.0  # exploration rate
-        self.e_decay = .99
+        self.e_decay = .999
         self.e_min = 0.05
         self.learning_rate = 0.01
         self.model = self._build_model()
@@ -25,11 +25,11 @@ class DQNAgent:
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(20, input_dim=self.state_size, activation='tanh'))
-        model.add(Dense(20, activation='tanh', kernel_initializer='uniform'))
+        model.add(Dense(20, input_dim=self.state_size, activation='relu'))
+        model.add(Dense(20, activation='relu', kernel_initializer='uniform'))
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
-                      optimizer=RMSprop(lr=self.learning_rate))
+                      optimizer=Adam(lr=self.learning_rate))
         return model
 
     def remember(self, state, action, reward, next_state, done):
