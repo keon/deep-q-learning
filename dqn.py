@@ -65,6 +65,7 @@ class DQNAgent:
     def save(self, name):
         self.model.save_weights(name)
 
+
 if __name__ == "__main__":
     env = gym.make('CartPole-v0')
     state_size = env.observation_space.shape[0]
@@ -85,8 +86,8 @@ if __name__ == "__main__":
             state = next_state
             if done or time == 999:
                 print("episode: {}/{}, score: {}, e: {:.2}"
-                        .format(e, EPISODES, time, agent.epsilon))
+                      .format(e, EPISODES, time, agent.epsilon))
                 break
         agent.replay(32)
         # if e % 10 == 0:
-            # agent.save("./save/cartpole.h5")
+        #     agent.save("./save/cartpole.h5")
