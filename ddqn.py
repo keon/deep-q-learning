@@ -19,7 +19,7 @@ class DQNAgent:
         self.gamma = 0.95    # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.99
         self.learning_rate = 0.001
         self.model = self._build_model()
         self.target_model = self._build_model()
@@ -79,9 +79,9 @@ if __name__ == "__main__":
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.n
     agent = DQNAgent(state_size, action_size)
-    # agent.load("./save/cartpole-master.h5")
+    # agent.load("./save/cartpole-ddqn.h5")
     done = False
-    batch_size = 64
+    batch_size = 32
 
     for e in range(EPISODES):
         state = env.reset()
@@ -90,6 +90,7 @@ if __name__ == "__main__":
             # env.render()
             action = agent.act(state)
             next_state, reward, done, _ = env.step(action)
+            reward = reward if not done else -10
             next_state = np.reshape(next_state, [1, state_size])
             agent.remember(state, action, reward, next_state, done)
             state = next_state
@@ -101,4 +102,4 @@ if __name__ == "__main__":
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
         # if e % 10 == 0:
-        #     agent.save("./save/cartpole.h5")
+        #     agent.save("./save/cartpole-ddqn.h5")
