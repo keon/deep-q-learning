@@ -9,7 +9,7 @@ Introduction to Making a Simple Game AI with Deep Reinforcement Learning
 Minimal and Simple Deep Q Learning Implemenation in Keras and Gym. Under 100 lines of code!
 
 The explanation for the `dqn.py` code is covered in the blog article
-[https://keon.io/rl/deep-q-learning-with-keras-and-gym/](https://keon.io/rl/deep-q-learning-with-keras-and-gym/)
+[https://keon.io/deep-q-learning/](https://keon.io/deep-q-learning/)
 
 
 I made minor tweaks to this repository such as `load` and `save` functions for convenience.
