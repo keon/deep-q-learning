@@ -100,7 +100,7 @@ if __name__ == "__main__":
                 print("episode: {}/{}, score: {}, e: {:.2}"
                       .format(e, EPISODES, time, agent.epsilon))
                 break
-        if len(agent.memory) > batch_size:
-            agent.replay(batch_size)
+            if len(agent.memory) > batch_size:
+                agent.replay(batch_size)
         # if e % 10 == 0:
         #     agent.save("./save/cartpole-ddqn.h5")
