@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
 import random
 import gym
 import numpy as np
@@ -7,8 +6,6 @@ from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
-
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 EPISODES = 1000
 
@@ -52,10 +49,12 @@ class DQNAgent:
                 target = (reward + self.gamma *
                           np.amax(self.model.predict(next_state)[0]))
             target_f = self.model.predict(state)
-            target_f[0][action] = target
+            target_f[0][action] = target 
+            # Filtering out states and targets for training
             states.append(state[0])
             targets_f.append(target_f[0])
         history = self.model.fit(np.array(states), np.array(targets_f), epochs=1, verbose=0)
+        # Keeping track of loss
         loss = history.history['loss'][0]
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
@@ -94,7 +93,8 @@ if __name__ == "__main__":
                 break
             if len(agent.memory) > batch_size:
                 loss = agent.replay(batch_size)
-                # if time % 10 == 0:
-                #     print("episode: {}/{}, time: {}, loss: {:.4f}".format(e, EPISODES, time, loss))  
+                # Logging loss every 10 timesteps
+                if time % 10 == 0:
+                    print("episode: {}/{}, time: {}, loss: {:.4f}".format(e, EPISODES, time, loss))  
         # if e % 10 == 0:
         #     agent.save("./save/cartpole-dqn.h5")

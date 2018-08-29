@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
 import random
-import os
 import gym
 import numpy as np
 from collections import deque
@@ -11,8 +9,6 @@ from keras.optimizers import Adam
 from keras import backend as K
 
 import tensorflow as tf
-
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 EPISODES = 5000
 
@@ -33,15 +29,15 @@ class DQNAgent:
     """Huber loss - Custom Loss Function for Q Learning
 
     References: https://en.wikipedia.org/wiki/Huber_loss
-                https://jaromiru.com/2017/05/27/on-using-huber-loss-in-deep-q-learning/
+                https://www.tensorflow.org/api_docs/python/tf/losses/huber_loss
     """
 
     def _huber_loss(self, y_true, y_pred, clip_delta=1.0):
         error = y_true - y_pred
-        cond  = K.abs(error) < clip_delta
+        cond  = K.abs(error) <= clip_delta
 
         squared_loss = 0.5 * K.square(error)
-        linear_loss  = clip_delta * (K.abs(error) - 0.5 * clip_delta)
+        linear_loss = 0.5 * K.square(clip_delta) + clip_delta * (K.abs(error) - clip_delta)
 
         return K.mean(tf.where(cond, squared_loss, linear_loss))
 
