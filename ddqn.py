@@ -9,6 +9,8 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from keras import backend as K
 
+import tensorflow as tf
+
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 EPISODES = 5000
@@ -27,10 +29,20 @@ class DQNAgent:
         self.target_model = self._build_model()
         self.update_target_model()
 
-    def _huber_loss(self, target, prediction):
-        # sqrt(1+error^2)-1
-        error = prediction - target
-        return K.mean(K.sqrt(1+K.square(error))-1, axis=-1)
+    """
+    Huber loss - Custom Loss Function for Q Learning
+    Links: 	https://en.wikipedia.org/wiki/Huber_loss
+            https://jaromiru.com/2017/05/27/on-using-huber-loss-in-deep-q-learning/
+    """
+
+    def _huber_loss(self, y_true, y_pred, clip_delta=1.0):
+        error = y_true - y_pred
+        cond  = K.abs(error) < clip_delta
+
+        squared_loss = 0.5 * K.square(error)
+        linear_loss  = clip_delta * (K.abs(error) - 0.5 * clip_delta)
+
+        return K.mean(tf.where(cond, squared_loss, linear_loss))
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
