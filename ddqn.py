@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import random
+import os
 import gym
 import numpy as np
 from collections import deque
@@ -29,10 +30,10 @@ class DQNAgent:
         self.target_model = self._build_model()
         self.update_target_model()
 
-    """
-    Huber loss - Custom Loss Function for Q Learning
-    Links: 	https://en.wikipedia.org/wiki/Huber_loss
-            https://jaromiru.com/2017/05/27/on-using-huber-loss-in-deep-q-learning/
+    """Huber loss - Custom Loss Function for Q Learning
+
+    References: https://en.wikipedia.org/wiki/Huber_loss
+                https://jaromiru.com/2017/05/27/on-using-huber-loss-in-deep-q-learning/
     """
 
     def _huber_loss(self, y_true, y_pred, clip_delta=1.0):

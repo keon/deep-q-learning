@@ -61,6 +61,8 @@ class DQNAgent:
             self.epsilon *= self.epsilon_decay
         return loss
 
+        return loss
+
     def load(self, name):
         self.model.load_weights(name)
 
@@ -93,6 +95,8 @@ if __name__ == "__main__":
                       .format(e, EPISODES, time, agent.epsilon))
                 break
             if len(agent.memory) > batch_size:
-                agent.replay(batch_size)
+                loss = agent.replay(batch_size)
+                # if time % 10 == 0:
+                #     print("episode: {}/{}, time: {}, loss: {:.4f}".format(e, EPISODES, time, loss))  
         # if e % 10 == 0:
         #     agent.save("./save/cartpole-dqn.h5")
