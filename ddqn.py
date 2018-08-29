@@ -26,7 +26,7 @@ class DQNAgent:
         self.target_model = self._build_model()
         self.update_target_model()
 
-    """Huber loss - Custom Loss Function for Q Learning
+    """Huber loss for Q Learning
 
     References: https://en.wikipedia.org/wiki/Huber_loss
                 https://www.tensorflow.org/api_docs/python/tf/losses/huber_loss
