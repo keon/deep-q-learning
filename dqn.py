@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import random
 import gym
 import numpy as np
@@ -9,6 +10,8 @@ from keras.optimizers import Adam
 
 EPISODES = 1000
 
+# Faster Training on CPU
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -43,6 +46,7 @@ class DQNAgent:
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
+        states, targets_f = [], []
         for state, action, reward, next_state, done in minibatch:
             target = reward
             if not done:
@@ -50,9 +54,17 @@ class DQNAgent:
                           np.amax(self.model.predict(next_state)[0]))
             target_f = self.model.predict(state)
             target_f[0][action] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0)
+
+            states.append(state[0])
+            targets_f.append(target_f[0])
+            
+        history = self.model.fit(np.array(states), np.array(targets_f), epochs=1, verbose=0)
+        loss = history.history['loss'][0]
+
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+
+        return loss
 
     def load(self, name):
         self.model.load_weights(name)
@@ -86,6 +98,8 @@ if __name__ == "__main__":
                       .format(e, EPISODES, time, agent.epsilon))
                 break
             if len(agent.memory) > batch_size:
-                agent.replay(batch_size)
+                loss = agent.replay(batch_size)
+                # if time % 10 == 0:
+                #     print("episode: {}/{}, time: {}, loss: {:.4f}".format(e, EPISODES, time, loss))  
         # if e % 10 == 0:
         #     agent.save("./save/cartpole-dqn.h5")
