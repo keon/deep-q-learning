@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import random
 import gym
 import numpy as np
@@ -8,8 +9,9 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from keras import backend as K
 
-EPISODES = 5000
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
+EPISODES = 5000
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
