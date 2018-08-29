@@ -61,8 +61,6 @@ class DQNAgent:
             self.epsilon *= self.epsilon_decay
         return loss
 
-        return loss
-
     def load(self, name):
         self.model.load_weights(name)
 
