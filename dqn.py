@@ -93,8 +93,9 @@ if __name__ == "__main__":
                 break
             if len(agent.memory) > batch_size:
                 loss = agent.replay(batch_size)
-                # Logging loss every 10 timesteps
+                # Logging training loss every 10 timesteps
                 if time % 10 == 0:
-                    print("episode: {}/{}, time: {}, loss: {:.4f}".format(e, EPISODES, time, loss))  
+                    print("episode: {}/{}, time: {}, loss: {:.4f}"
+                        .format(e, EPISODES, time, loss))  
         # if e % 10 == 0:
         #     agent.save("./save/cartpole-dqn.h5")

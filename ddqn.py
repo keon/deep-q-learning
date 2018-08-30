@@ -37,9 +37,9 @@ class DQNAgent:
         cond  = K.abs(error) <= clip_delta
 
         squared_loss = 0.5 * K.square(error)
-        linear_loss = 0.5 * K.square(clip_delta) + clip_delta * (K.abs(error) - clip_delta)
+        quadratic_loss = 0.5 * K.square(clip_delta) + clip_delta * (K.abs(error) - clip_delta)
 
-        return K.mean(tf.where(cond, squared_loss, linear_loss))
+        return K.mean(tf.where(cond, squared_loss, quadratic_loss))
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
