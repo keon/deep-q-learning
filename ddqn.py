@@ -8,8 +8,9 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from keras import backend as K
 
-EPISODES = 5000
+import tensorflow as tf
 
+EPISODES = 5000
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -25,10 +26,20 @@ class DQNAgent:
         self.target_model = self._build_model()
         self.update_target_model()
 
-    def _huber_loss(self, target, prediction):
-        # sqrt(1+error^2)-1
-        error = prediction - target
-        return K.mean(K.sqrt(1+K.square(error))-1, axis=-1)
+    """Huber loss for Q Learning
+
+    References: https://en.wikipedia.org/wiki/Huber_loss
+                https://www.tensorflow.org/api_docs/python/tf/losses/huber_loss
+    """
+
+    def _huber_loss(self, y_true, y_pred, clip_delta=1.0):
+        error = y_true - y_pred
+        cond  = K.abs(error) <= clip_delta
+
+        squared_loss = 0.5 * K.square(error)
+        quadratic_loss = 0.5 * K.square(clip_delta) + clip_delta * (K.abs(error) - clip_delta)
+
+        return K.mean(tf.where(cond, squared_loss, quadratic_loss))
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
