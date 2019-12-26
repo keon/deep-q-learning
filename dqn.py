@@ -31,7 +31,7 @@ class DQNAgent:
                       optimizer=Adam(lr=self.learning_rate))
         return model
 
-    def remember(self, state, action, reward, next_state, done):
+    def memorize(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
@@ -78,7 +78,7 @@ if __name__ == "__main__":
             next_state, reward, done, _ = env.step(action)
             reward = reward if not done else -10
             next_state = np.reshape(next_state, [1, state_size])
-            agent.remember(state, action, reward, next_state, done)
+            agent.memorize(state, action, reward, next_state, done)
             state = next_state
             if done:
                 print("episode: {}/{}, score: {}, e: {:.2}"
