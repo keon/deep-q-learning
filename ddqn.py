@@ -17,17 +17,16 @@ class DQNAgent:
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=2000)
-        self.gamma = 0.95    # discount rate
+        self.gamma = 0.98    # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.99
+        self.epsilon_decay = 0.999
         self.learning_rate = 0.001
         self.model = self._build_model()
         self.target_model = self._build_model()
         self.update_target_model()
 
     """Huber loss for Q Learning
-
     References: https://en.wikipedia.org/wiki/Huber_loss
                 https://www.tensorflow.org/api_docs/python/tf/losses/huber_loss
     """
@@ -47,8 +46,7 @@ class DQNAgent:
         model.add(Dense(24, input_dim=self.state_size, activation='relu'))
         model.add(Dense(24, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
-        model.compile(loss=self._huber_loss,
-                      optimizer=Adam(lr=self.learning_rate))
+        model.compile(loss=self._huber_loss, optimizer=Adam(lr=self.learning_rate))
         return model
 
     def update_target_model(self):
@@ -66,16 +64,24 @@ class DQNAgent:
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
+        stateBatch = np.zeros((batch_size,self.state_size))
+        targetBatch = np.zeros((batch_size,self.action_size))
+        x = 0
+
         for state, action, reward, next_state, done in minibatch:
-            target = self.model.predict(state)
+            stateBatch[x] = state[0]
+
+            targetBatch[x] = self.model.predict(state)[0]
             if done:
-                target[0][action] = reward
+                targetBatch[x][action] = reward
             else:
-                # a = self.model.predict(next_state)[0]
                 t = self.target_model.predict(next_state)[0]
-                target[0][action] = reward + self.gamma * np.amax(t)
-                # target[0][action] = reward + self.gamma * t[np.argmax(a)]
-            self.model.fit(state, target, epochs=1, verbose=0)
+                targetBatch[x][action] = reward + self.gamma * np.amax(t)
+                
+            x+=1
+
+
+        self.model.fit(stateBatch, targetBatch, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
@@ -92,31 +98,35 @@ if __name__ == "__main__":
     action_size = env.action_space.n
     agent = DQNAgent(state_size, action_size)
     # agent.load("./save/cartpole-ddqn.h5")
-    done = False
-    batch_size = 32
-
+    
+    batch_size = 128
+    
     for e in range(EPISODES):
         state = env.reset()
         state = np.reshape(state, [1, state_size])
-        for time in range(500):
+        done = False
+        cumReward = 0
+        while not done:
             # env.render()
             action = agent.act(state)
             next_state, reward, done, _ = env.step(action)
-            #reward = reward if not done else -10
+            env.render()
+            
+            cumReward+=reward
+            reward = reward if not done else -10
             x,x_dot,theta,theta_dot = next_state
             r1 = (env.x_threshold - abs(x)) / env.x_threshold - 0.8
             r2 = (env.theta_threshold_radians - abs(theta)) / env.theta_threshold_radians - 0.5
-            reward = r1 + r2
+            reward = reward + r1 + r2
             
+
+
             next_state = np.reshape(next_state, [1, state_size])
             agent.memorize(state, action, reward, next_state, done)
             state = next_state
-            if done:
-                agent.update_target_model()
-                print("episode: {}/{}, score: {}, e: {:.2}"
-                      .format(e, EPISODES, time, agent.epsilon))
-                break
-            if len(agent.memory) > batch_size:
-                agent.replay(batch_size)
+            agent.replay(min(batch_size,len(agent.memory)))
+
+        agent.update_target_model()
+        print("episode: {}/{}, score: {}, e: {:.2}".format(e, EPISODES, cumReward, agent.epsilon))
         # if e % 10 == 0:
         #     agent.save("./save/cartpole-ddqn.h5")
