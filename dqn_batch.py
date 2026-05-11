@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+import json
+import os
 import random
-import gym
+import gymnasium as gym
 import numpy as np
 from collections import deque
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Input
 from keras.optimizers import Adam
 
 EPISODES = 1000
@@ -24,11 +26,12 @@ class DQNAgent:
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(24, input_dim=self.state_size, activation='relu'))
+        model.add(Input(shape=(self.state_size,)))
+        model.add(Dense(24, activation='relu'))
         model.add(Dense(24, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
-                      optimizer=Adam(lr=self.learning_rate))
+                      optimizer=Adam(learning_rate=self.learning_rate))
         return model
 
     def memorize(self, state, action, reward, next_state, done):
@@ -37,7 +40,7 @@ class DQNAgent:
     def act(self, state):
         if np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
-        act_values = self.model.predict(state)
+        act_values = self.model.predict(state, verbose=0)
         return np.argmax(act_values[0])  # returns action
 
     def replay(self, batch_size):
@@ -47,9 +50,9 @@ class DQNAgent:
             target = reward
             if not done:
                 target = (reward + self.gamma *
-                          np.amax(self.model.predict(next_state)[0]))
-            target_f = self.model.predict(state)
-            target_f[0][action] = target 
+                          np.amax(self.model.predict(next_state, verbose=0)[0]))
+            target_f = self.model.predict(state, verbose=0)
+            target_f[0][action] = target
             # Filtering out states and targets for training
             states.append(state[0])
             targets_f.append(target_f[0])
@@ -62,27 +65,34 @@ class DQNAgent:
 
     def load(self, name):
         self.model.load_weights(name)
+        meta = name + ".meta.json"
+        if os.path.exists(meta):
+            with open(meta) as f:
+                self.epsilon = json.load(f)["epsilon"]
 
     def save(self, name):
         self.model.save_weights(name)
+        with open(name + ".meta.json", "w") as f:
+            json.dump({"epsilon": self.epsilon}, f)
 
 
 if __name__ == "__main__":
     env = gym.make('CartPole-v1')
-    state_size = env.observation_space.shape[0]
-    action_size = env.action_space.n
+    state_size = int(env.observation_space.shape[0])
+    action_size = int(env.action_space.n)
     agent = DQNAgent(state_size, action_size)
-    # agent.load("./save/cartpole-dqn.h5")
+    # agent.load("./save/cartpole-dqn.weights.h5")
     done = False
     batch_size = 32
 
     for e in range(EPISODES):
-        state = env.reset()
+        state, _ = env.reset()
         state = np.reshape(state, [1, state_size])
         for time in range(500):
             # env.render()
             action = agent.act(state)
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             reward = reward if not done else -10
             next_state = np.reshape(next_state, [1, state_size])
             agent.memorize(state, action, reward, next_state, done)
@@ -96,6 +106,6 @@ if __name__ == "__main__":
                 # Logging training loss every 10 timesteps
                 if time % 10 == 0:
                     print("episode: {}/{}, time: {}, loss: {:.4f}"
-                        .format(e, EPISODES, time, loss))  
+                        .format(e, EPISODES, time, loss))
         # if e % 10 == 0:
-        #     agent.save("./save/cartpole-dqn.h5")
+        #     agent.save("./save/cartpole-dqn.weights.h5")
