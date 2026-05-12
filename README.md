@@ -29,3 +29,17 @@ I'll cover `ddqn` in the next article.
 - `ddqn.py` now implements actual Double DQN (online net selects, target net evaluates).
 - Removed CartPole-specific reward shaping from `ddqn.py` so it's env-agnostic.
 - `save()` / `load()` now persist `epsilon` alongside the weights.
+
+### 2018-08
+- Split batched-update training into its own file (`dqn_batch.py`).
+
+### 2017-06
+- Added Double DQN with Huber loss in `ddqn.py`.
+- Added `requirements.txt`.
+
+### 2017-05
+- Migrated to the Keras 2 API.
+- Hyperparameter tuning that finally got `dqn.py` learning reliably on CartPole.
+
+### 2017-02
+- Initial release: DQN agent on CartPole with experience replay (`deque`-bounded memory) and `save` / `load` helpers.
