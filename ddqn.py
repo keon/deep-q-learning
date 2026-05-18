@@ -52,16 +52,15 @@ class DQNAgent:
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
-        for state, action, reward, next_state, done in minibatch:
-            target = self.model.predict(state, verbose=0)
-            if done:
-                target[0][action] = reward
-            else:
-                # Double DQN: online net picks the action, target net evaluates it.
-                a = np.argmax(self.model.predict(next_state, verbose=0)[0])
-                t = self.target_model.predict(next_state, verbose=0)[0]
-                target[0][action] = reward + self.gamma * t[a]
-            self.model.fit(state, target, epochs=1, verbose=0)
+        states = np.vstack([m[0] for m in minibatch])
+        next_states = np.vstack([m[3] for m in minibatch])
+        # Double DQN: online net picks the action, target net evaluates it.
+        targets = self.model.predict(states, verbose=0)
+        next_actions = np.argmax(self.model.predict(next_states, verbose=0), axis=1)
+        next_q = self.target_model.predict(next_states, verbose=0)
+        for i, (_, action, reward, _, done) in enumerate(minibatch):
+            targets[i][action] = reward if done else reward + self.gamma * next_q[i][next_actions[i]]
+        self.model.fit(states, targets, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
 
